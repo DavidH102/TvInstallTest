@@ -12,9 +12,7 @@
                playsinline
                preload="auto"
                style="width: 100vw; height: 100vh; object-fit: cover; position: fixed; top: 0; left: 0; z-index: 1;">
-            <!-- Waving Flag Videos Only -->
-            <source src="videos/UKFlag_4K.mp4" type="video/mp4; codecs=avc1.42001E">
-            <source src="videos/USAFlag_4K.mp4" type="video/mp4; codecs=avc1.42001E">
+            <!-- Android TV Optimized Flag Videos -->
             <source src="videos/UKFlag_AndroidTV.mp4" type="video/mp4; codecs=avc1.42001E">
             <source src="videos/USAFlag_AndroidTV.mp4" type="video/mp4; codecs=avc1.42001E">
         </video>
@@ -46,8 +44,8 @@
     private int currentVideoIndex = 0;
 
     private readonly string[] videoFiles = {
-        "UKFlag_4K.mp4",
-        "USAFlag_4K.mp4"
+        "UKFlag_AndroidTV.mp4",
+        "USAFlag_AndroidTV.mp4"
     };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -69,7 +67,6 @@
     {
         currentVideoIndex = (currentVideoIndex + 1) % videoFiles.Length;
         var currentVideo = videoFiles[currentVideoIndex];
-        var fallbackVideo = currentVideo.Replace("_4K", "_AndroidTV");
         
         try 
         {
@@ -77,7 +74,7 @@
                 var video = document.getElementById('flagVideo');
                 if (video) {{
                     video.pause();
-                    video.innerHTML = '<source src=""videos/{currentVideo}"" type=""video/mp4; codecs=avc1.42001E""><source src=""videos/{fallbackVideo}"" type=""video/mp4; codecs=avc1.42001E"">';
+                    video.innerHTML = '<source src=""videos/{currentVideo}"" type=""video/mp4; codecs=avc1.42001E"">';
                     video.load();
                     
                     var playPromise = video.play();

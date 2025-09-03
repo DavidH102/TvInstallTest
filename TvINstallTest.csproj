@@ -84,8 +84,6 @@
 
     <ItemGroup>
         <!-- Video files as MAUI Assets -->
-        <MauiAsset Include="wwwroot\videos\UKFlag_4K.mp4" LogicalName="videos/UKFlag_4K.mp4" />
-        <MauiAsset Include="wwwroot\videos\USAFlag_4K.mp4" LogicalName="videos/USAFlag_4K.mp4" />
         <MauiAsset Include="wwwroot\videos\UKFlag_AndroidTV.mp4" LogicalName="videos/UKFlag_AndroidTV.mp4" />
         <MauiAsset Include="wwwroot\videos\USAFlag_AndroidTV.mp4" LogicalName="videos/USAFlag_AndroidTV.mp4" />
     </ItemGroup>
