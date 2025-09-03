@@ -1,0 +1,16 @@
+<Router AppAssembly="typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="typeof(Layout.MainLayout)">
+            <div style="text-align: center; padding: 50px;">
+                <h1 style="color: #ff6600;">🔥 Page Not Found</h1>
+                <p>Sorry, there's nothing at this address.</p>
+                <a href="/" style="color: #0066cc; text-decoration: none; font-size: 18px;">🏠 Go Home</a>
+            </div>
+        </LayoutView>
+    </NotFound>
+</Router>

@@ -1,0 +1,123 @@
+@page "/counter"
+
+<div class="counter-container">
+    <div class="counter-content">
+        <h1 class="counter-title">Counter</h1>
+        
+        <div class="count-display">
+            <span class="count-number">@currentCount</span>
+        </div>
+        
+        <div class="button-group">
+            <button @onclick="IncrementCount" class="counter-btn increment">+</button>
+            <button @onclick="DecrementCount" class="counter-btn decrement">-</button>
+            <button @onclick="ResetCount" class="counter-btn reset">Reset</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .counter-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        color: white;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .counter-content {
+        text-align: center;
+        padding: 3rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .counter-title {
+        font-size: 2.5rem;
+        font-weight: 300;
+        margin-bottom: 2rem;
+        color: #ffffff;
+        letter-spacing: 2px;
+    }
+
+    .count-display {
+        margin: 2rem 0;
+    }
+
+    .count-number {
+        font-size: 4rem;
+        font-weight: 700;
+        color: #4a9eff;
+        text-shadow: 0 0 20px rgba(74, 158, 255, 0.5);
+        display: inline-block;
+        min-width: 120px;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .counter-btn {
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 80px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .increment {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+    }
+
+    .decrement {
+        background: linear-gradient(135deg, #dc3545, #fd7e14);
+        color: white;
+    }
+
+    .reset {
+        background: linear-gradient(135deg, #6c757d, #495057);
+        color: white;
+    }
+
+    .counter-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .counter-btn:active {
+        transform: translateY(0);
+    }
+</style>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+    
+    private void DecrementCount()
+    {
+        currentCount--;
+    }
+    
+    private void ResetCount()
+    {
+        currentCount = 0;
+    }
+}

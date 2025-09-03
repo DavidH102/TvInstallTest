@@ -1,0 +1,103 @@
+@page "/"
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<div class="home-container">
+    <div class="video-container">
+        <video id="flagVideo" 
+               autoplay 
+               muted 
+               loop 
+               playsinline
+               preload="auto"
+               style="width: 100vw; height: 100vh; object-fit: cover; position: fixed; top: 0; left: 0; z-index: 1;">
+            <!-- Waving Flag Videos Only -->
+            <source src="videos/UKFlag_4K.mp4" type="video/mp4; codecs=avc1.42001E">
+            <source src="videos/USAFlag_4K.mp4" type="video/mp4; codecs=avc1.42001E">
+            <source src="videos/UKFlag_AndroidTV.mp4" type="video/mp4; codecs=avc1.42001E">
+            <source src="videos/USAFlag_AndroidTV.mp4" type="video/mp4; codecs=avc1.42001E">
+        </video>
+    </div>
+</div>
+
+<style>
+    .home-container {
+        position: fixed;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        background: #000000;
+        z-index: 0;
+    }
+
+    .video-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 1;
+    }
+</style>
+
+@code {
+    private System.Timers.Timer? autoSwitchTimer;
+    private int currentVideoIndex = 0;
+
+    private readonly string[] videoFiles = {
+        "UKFlag_4K.mp4",
+        "USAFlag_4K.mp4"
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            StartAutoSwitchTimer();
+        }
+    }
+
+    private void StartAutoSwitchTimer()
+    {
+        autoSwitchTimer = new System.Timers.Timer(30000); // Switch every 30 seconds
+        autoSwitchTimer.Elapsed += async (sender, e) => await SwitchToNextVideo();
+        autoSwitchTimer.Start();
+    }
+
+    private async Task SwitchToNextVideo()
+    {
+        currentVideoIndex = (currentVideoIndex + 1) % videoFiles.Length;
+        var currentVideo = videoFiles[currentVideoIndex];
+        var fallbackVideo = currentVideo.Replace("_4K", "_AndroidTV");
+        
+        try 
+        {
+            await JSRuntime.InvokeVoidAsync("eval", $@"
+                var video = document.getElementById('flagVideo');
+                if (video) {{
+                    video.pause();
+                    video.innerHTML = '<source src=""videos/{currentVideo}"" type=""video/mp4; codecs=avc1.42001E""><source src=""videos/{fallbackVideo}"" type=""video/mp4; codecs=avc1.42001E"">';
+                    video.load();
+                    
+                    var playPromise = video.play();
+                    if (playPromise !== undefined) {{
+                        playPromise.catch(function(error) {{
+                            setTimeout(function() {{ video.play(); }}, 1000);
+                        }});
+                    }}
+                }}
+            ");
+        }
+        catch (Exception)
+        {
+            // Silent error handling - no UI feedback needed
+        }
+    }
+
+    public void Dispose()
+    {
+        autoSwitchTimer?.Stop();
+        autoSwitchTimer?.Dispose();
+    }
+}
