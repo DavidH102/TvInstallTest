@@ -5,15 +5,27 @@
 
 <div class="home-container">
     <div class="video-container">
-        <video id="flagVideo" 
+        <!-- First video element -->
+        <video id="flagVideo1" 
                autoplay 
                muted 
                loop 
                playsinline
                preload="auto"
-               style="width: 100vw; height: 100vh; object-fit: cover; position: fixed; top: 0; left: 0; z-index: 1;">
-            <!-- Android TV Optimized Flag Videos -->
+               class="flag-video active-video"
+               style="width: 100vw; height: 100vh; object-fit: cover; position: fixed; top: 0; left: 0; z-index: 2; opacity: 1;">
             <source src="videos/UKFlag_AndroidTV.mp4" type="video/mp4; codecs=avc1.42001E">
+        </video>
+        
+        <!-- Second video element for smooth transitions -->
+        <video id="flagVideo2" 
+               autoplay 
+               muted 
+               loop 
+               playsinline
+               preload="auto"
+               class="flag-video inactive-video"
+               style="width: 100vw; height: 100vh; object-fit: cover; position: fixed; top: 0; left: 0; z-index: 1; opacity: 0;">
             <source src="videos/USAFlag_AndroidTV.mp4" type="video/mp4; codecs=avc1.42001E">
         </video>
     </div>
@@ -37,11 +49,27 @@
         height: 100vh;
         z-index: 1;
     }
+
+    .flag-video {
+        transition: opacity 2s ease-in-out;
+        will-change: opacity;
+    }
+
+    .active-video {
+        opacity: 1;
+        z-index: 2;
+    }
+
+    .inactive-video {
+        opacity: 0;
+        z-index: 1;
+    }
 </style>
 
 @code {
     private System.Timers.Timer? autoSwitchTimer;
     private int currentVideoIndex = 0;
+    private bool isVideo1Active = true; // Track which video is currently visible
 
     private readonly string[] videoFiles = {
         "UKFlag_AndroidTV.mp4",
@@ -52,7 +80,38 @@
     {
         if (firstRender)
         {
+            await InitializeVideos();
             StartAutoSwitchTimer();
+        }
+    }
+
+    private async Task InitializeVideos()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval", @"
+                var video1 = document.getElementById('flagVideo1');
+                var video2 = document.getElementById('flagVideo2');
+                
+                if (video1 && video2) {
+                    // Ensure both videos are loaded and playing
+                    video1.load();
+                    video2.load();
+                    
+                    // Play both videos but only video1 is visible initially
+                    video1.play().catch(function(error) {
+                        setTimeout(function() { video1.play(); }, 1000);
+                    });
+                    
+                    video2.play().catch(function(error) {
+                        setTimeout(function() { video2.play(); }, 1000);
+                    });
+                }
+            ");
+        }
+        catch (Exception)
+        {
+            // Silent error handling - no UI feedback needed
         }
     }
 
@@ -66,25 +125,52 @@
     private async Task SwitchToNextVideo()
     {
         currentVideoIndex = (currentVideoIndex + 1) % videoFiles.Length;
-        var currentVideo = videoFiles[currentVideoIndex];
+        var nextVideo = videoFiles[currentVideoIndex];
         
         try 
         {
+            // Determine which video element to update
+            string inactiveVideoId = isVideo1Active ? "flagVideo2" : "flagVideo1";
+            string activeVideoId = isVideo1Active ? "flagVideo1" : "flagVideo2";
+            
             await JSRuntime.InvokeVoidAsync("eval", $@"
-                var video = document.getElementById('flagVideo');
-                if (video) {{
-                    video.pause();
-                    video.innerHTML = '<source src=""videos/{currentVideo}"" type=""video/mp4; codecs=avc1.42001E"">';
-                    video.load();
+                var activeVideo = document.getElementById('{activeVideoId}');
+                var inactiveVideo = document.getElementById('{inactiveVideoId}');
+                
+                if (activeVideo && inactiveVideo) {{
+                    // Update the inactive video source
+                    inactiveVideo.innerHTML = '<source src=""videos/{nextVideo}"" type=""video/mp4; codecs=avc1.42001E"">';
+                    inactiveVideo.load();
                     
-                    var playPromise = video.play();
+                    // Start playing the inactive video
+                    var playPromise = inactiveVideo.play();
                     if (playPromise !== undefined) {{
-                        playPromise.catch(function(error) {{
-                            setTimeout(function() {{ video.play(); }}, 1000);
+                        playPromise.then(function() {{
+                            // Once the new video is playing, fade the transition
+                            activeVideo.classList.remove('active-video');
+                            activeVideo.classList.add('inactive-video');
+                            
+                            inactiveVideo.classList.remove('inactive-video');
+                            inactiveVideo.classList.add('active-video');
+                        }}).catch(function(error) {{
+                            console.log('Video play error:', error);
+                            // Retry after a short delay
+                            setTimeout(function() {{
+                                inactiveVideo.play().then(function() {{
+                                    activeVideo.classList.remove('active-video');
+                                    activeVideo.classList.add('inactive-video');
+                                    
+                                    inactiveVideo.classList.remove('inactive-video');
+                                    inactiveVideo.classList.add('active-video');
+                                }});
+                            }}, 1000);
                         }});
                     }}
                 }}
             ");
+            
+            // Toggle the active video tracking
+            isVideo1Active = !isVideo1Active;
         }
         catch (Exception)
         {
